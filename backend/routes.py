@@ -3,6 +3,7 @@ from flask import jsonify
 from flask import request
 from backend import app
 from backend.db_config import mysql
+from backend.todo_entry import todo_entry
 
 
 @app.route('/entries', methods=['GET'])
@@ -12,8 +13,8 @@ def get_all_entries():
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM todo_entries")
         res = cursor.fetchall()
-        data = jsonify(res)
-        return data, 200
+        data = [todo_entry(entry) for entry in res]
+        return jsonify(data), 200
     except Exception as e:
         print(e)
         res = jsonify("An error occurred while updating the entry")
@@ -30,8 +31,8 @@ def get_entry_by_id(todo_id):
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM todo_entries WHERE id=%s", [todo_id])
         res = cursor.fetchone()
-        data = jsonify(res)
-        return data, 200
+        data = [todo_entry(res)]
+        return jsonify(data), 200
     except Exception as e:
         print(e)
         res = jsonify("An error occurred while updating the entry")
