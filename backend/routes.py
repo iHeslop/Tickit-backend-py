@@ -77,8 +77,18 @@ def create_entry():
         cursor.execute(sql, (created_at, updated_at,
                        content, title, completed))
         conn.commit()
-        res = jsonify("User added successfully")
-        return res, 200
+
+        entry_id = cursor.lastrowid
+        entry = {
+            'id': entry_id,
+            'createdAt': created_at.isoformat(),
+            'updatedAt': updated_at.isoformat(),
+            'content': content,
+            'title': title,
+            'completed': completed
+        }
+
+        return entry, 200
     except Exception as e:
         print(e)
         res = jsonify("An error occurred while updating the entry")
@@ -119,8 +129,11 @@ def update_entry(todo_id):
         sql = f"UPDATE todo_entries SET {', '.join(update_fields)} WHERE id=%s"
         cursor.execute(sql, update_values)
         conn.commit()
-        res = jsonify("User updated successfully")
-        return res, 200
+
+        cursor.execute("SELECT * FROM todo_entries WHERE id=%s", [todo_id])
+        res = cursor.fetchone()
+        data = todo_entry(res)
+        return jsonify(data), 200
 
     except Exception as e:
         print(e)
